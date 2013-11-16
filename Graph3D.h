@@ -1,6 +1,8 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <vector>
+
 using namespace std;
 
 class Node3D {
@@ -31,7 +33,15 @@ private:
 class Graph3D {
 public:
     void readInGraph(string);
+    int getNumNodes(void);
+    int getNumEdges(void);
+    void setNumNodes(int);
+    void setNumEdges(int);
+    Node3D getNodeAt(int);
+    Edge3D getEdgeAt(int);
 private:
-    Edge3D edges [];
-    Node3D nodes [];
+    vector<Edge3D> edges;
+    vector<Node3D> nodes;
+    int numNodes;
+    int numEdges;
 };

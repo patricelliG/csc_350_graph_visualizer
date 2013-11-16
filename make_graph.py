@@ -63,8 +63,10 @@ while edge_count != 0:
     
 #Create the file
 f = open(str(file_name) + '.txt', 'w')
-f.write('Nodes: ' + str(N) + '\n')
-f.write('Edges: ' + str(number_of_edges) + '\n')
+#Write the number of nodes
+f.write(str(N) + '\n')
+#Write the number of edges 
+f.write(str(number_of_edges) + '\n')
 for edge in edges:
     f.write(edge + '\n')
 f.close()

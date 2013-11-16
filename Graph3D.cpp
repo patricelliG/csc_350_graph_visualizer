@@ -1,4 +1,5 @@
 #include "Graph3D.h"
+#include <stdlib.h>
 
 float Node3D::getX()
 {
@@ -55,13 +56,47 @@ void Graph3D::readInGraph(string file)
     //Open the file
     ifstream input (file.c_str());
 
-    //Read in the data
+    //Read in the data and make the graph
     string line;
     if (input.is_open())
     {
-        while (getline (input,line))
+        //Get the number of nodes
+        getline(input, line);
+        numNodes = atoi(line.c_str()); 
+        
+
+        //Get the number of edges
+        getline(input, line);
+        numEdges = atoi(line.c_str()); 
+
+        //Initialize the nodes vector
+        for (int i = 0; i < numNodes; i++)
         {
-            cout << line << endl;
+            Node3D newNode;
+            nodes.push_back(newNode);
+        }
+
+        //The rest of the file are edges
+        //Store the edges in the edges vector
+        string edgeSource, edgeSink;
+        while (getline(input,line))
+        {
+          //Parse the source
+          int index = 0;
+          edgeSource = "";
+          while (line[index] != ' ')
+          {
+              edgeSource += line[index];
+              index++;
+          }
+          //Parse the sink
+          edgeSink = line.substr(index, line.length());
+
+          //Store the edge in the edges vector
+          Edge3D newEdge;
+          newEdge.setSource(atoi(edgeSource.c_str()));
+          newEdge.setSink(atoi(edgeSink.c_str()));
+          edges.push_back(newEdge);
         }
     }
     else
@@ -70,3 +105,32 @@ void Graph3D::readInGraph(string file)
     }
 }
 
+int Graph3D::getNumNodes()
+{
+    return numNodes;
+}
+
+int Graph3D::getNumEdges()
+{
+    return numEdges;
+}
+
+void Graph3D::setNumNodes(int numNodes)
+{
+    this->numNodes = numNodes;
+}
+
+void Graph3D::setNumEdges(int numEdges)
+{
+    this->numEdges = numEdges;
+}
+
+Node3D Graph3D::getNodeAt(int index)
+{
+    return nodes[index];
+}
+
+Edge3D Graph3D::getEdgeAt(int index)
+{
+    return edges[index];
+}
