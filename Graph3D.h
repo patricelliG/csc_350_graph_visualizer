@@ -39,6 +39,7 @@ public:
     void setNumEdges(int);
     Node3D getNodeAt(int);
     Edge3D getEdgeAt(int);
+    void computeNodeLocations(void);
 private:
     vector<Edge3D> edges;
     vector<Node3D> nodes;

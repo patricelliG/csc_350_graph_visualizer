@@ -1,5 +1,7 @@
 #include "Graph3D.h"
 #include <stdlib.h>
+#include <math.h> 
+#define PI 3.1415926
 
 float Node3D::getX()
 {
@@ -133,4 +135,26 @@ Node3D Graph3D::getNodeAt(int index)
 Edge3D Graph3D::getEdgeAt(int index)
 {
     return edges[index];
+}
+
+//This function computes the location of each node
+//The location scales according to how many nodes are in the graph
+void Graph3D::computeNodeLocations()
+{
+      int N = numNodes;
+      float dlong, dz, llong, x, y, z, r;
+      dlong = PI * (3 - sqrt(5));
+      dz = 2.0/N;
+      z = 1 - dz / 2;
+      for (int k = 0; k < N; k++)
+      {
+          r = sqrt(1 - z * z);
+          x = cos(llong) * r;
+          y = sin(llong) * r;
+          nodes[k].setX(x);
+          nodes[k].setY(y);
+          nodes[k].setZ(z);
+          z = z - dz;
+          llong = llong + dlong;
+      }          
 }
