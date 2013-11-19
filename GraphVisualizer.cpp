@@ -17,35 +17,44 @@
 
 using namespace std;
 
-#define NODE_RADIUS .055
+#define NODE_RADIUS .1
 #define NODE_SLICES 25
 #define NODE_STACKS 25
 
 Graph3D g1;
-float zoom = -55.0;
+float zoom = -15.0;
+float rotX = 0.0;
+float rotY = 0.0;
 
 // Drawing routine.
 void drawScene(void)
 {
     glClear(GL_COLOR_BUFFER_BIT);
-    glColor3f(0.0, 0.0, 0.0);
+    glColor3f(0.0, 0.0, 1.0);
     glLoadIdentity(); 
-    
+    gluLookAt(0.0, 0.0, zoom, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+    glRotatef(rotX, 1.0, 0.0, 0.0);
+    glRotatef(rotY, 0.0, 1.0, 0.0);
     // Modeling transformations.
-    glTranslatef(0.0, 0.0, zoom); 
+    //glTranslatef(0.0, 0.0, 0.0); 
  
+    glMatrixMode(GL_MODELVIEW);
     //Draw the nodes
     for (int i = 0; i < g1.getNumNodes(); i++)
     {
-        glutSolidSphere(NODE_RADIUS, NODE_SLICES, NODE_STACKS);
+        glPushMatrix();
         //Move it into position
         glTranslatef(g1.getNodeAt(i).getX(), g1.getNodeAt(i).getY(), g1.getNodeAt(i).getZ());
+        //Render the spere
+        glutSolidSphere(NODE_RADIUS, NODE_SLICES, NODE_STACKS);
+        glPopMatrix();
     }
 
     //Draw the edges
     Node3D source, sink;
-    glBegin(GL_LINE);
-        glColor3i(0, 0, 0);
+    glLineWidth(1.0);
+    glBegin(GL_LINE_STRIP);
+        glColor3f(0.0, 0.0, 0.0);
         for (int i = 0; i < g1.getNumEdges(); i++)
         {
             //Retrieve the source and sink nodes
@@ -86,25 +95,30 @@ void keyInput(unsigned char key, int x, int y)
     switch(key) 
     {
         case 97:
-            cout << "Hit a" << endl;
+            rotY += 1;
+            glutPostRedisplay();
             break;
         case 100:
-            cout << "Hit d" << endl;
+            rotY -= 1;
+            glutPostRedisplay();
             break;
         case 101:
-            cout << "Hit e" << endl;
             //Zoom out
-            zoom = 50;
+            zoom += .25;
+            glutPostRedisplay();
             break;
         case 113:
-            cout << "Hit q" << endl;
             //Zoom in
+            zoom -= .25;
+            glutPostRedisplay();
             break;
         case 115:
-            cout << "Hit s" << endl;
+            rotX += 1;
+            glutPostRedisplay();
             break;
         case 119:
-            cout << "Hit w" << endl;
+            rotX -= 1;
+            glutPostRedisplay();
             break;
         case 27:
             exit(0);

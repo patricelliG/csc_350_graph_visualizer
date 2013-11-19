@@ -141,20 +141,55 @@ Edge3D Graph3D::getEdgeAt(int index)
 //The location scales according to how many nodes are in the graph
 void Graph3D::computeNodeLocations()
 {
-      int N = numNodes;
-      float dlong, dz, llong, x, y, z, r;
-      dlong = PI * (3 - sqrt(5));
-      dz = 2.0/N;
-      z = 1 - dz / 2;
-      for (int k = 0; k < N; k++)
-      {
-          r = sqrt(1 - z * z);
-          x = cos(llong) * r;
-          y = sin(llong) * r;
-          nodes[k].setX(x);
-          nodes[k].setY(y);
-          nodes[k].setZ(z);
-          z = z - dz;
-          llong = llong + dlong;
-      }          
+  int n;		/* number of points */
+  int k;                /* index */
+  float phi1, phi, theta, h, x, y, z;
+  float R = 10.0;	/* default radius */
+  int r;		/* true radius */
+  int r1, r2, r3;	/* ellipsoid axis lengths */
+  
+  r = R;
+  r1 = r2 = r3 = r;
+  
+  n = numNodes;
+ 
+  phi1 = 0.0;
+
+  //First node
+  //printf ( "%6f  %6f  %6f\n", 0.0, 0.0, -1.0 * r3 );
+  nodes[0].setX(0.0);
+  nodes[0].setY(0.0);
+  nodes[0].setZ(-1.0 * r3);
+
+  for ( k = 2; k <= n - 1; k ++ ) {
+    /* Generate a random point on a sphere of radius 1. */
+    h = -1 + 2 * ( k - 1 ) / ( double )( n - 1 );
+    theta = acos ( h );
+
+    if ( theta < 0 || theta > M_PI )
+      printf( "Error\n" ),
+      exit (1);
+
+    phi = phi1 + 3.6 / ( sqrt ( ( double )n * ( 1 - h * h ) ) ); 
+    phi = fmod ( phi, 2 * M_PI );
+    phi1 = phi;
+
+    x = cos ( phi ) * sin ( theta );
+    y = sin ( phi ) * sin ( theta );
+    /* z = cos ( theta ); But z==h, so: */
+    z = h;
+
+//    cout << "x= " << r1 * x << " y= " << r2*y << " z= " << r3 * z << endl;
+    nodes[k].setX(r1 * x);
+    nodes[k].setY(r2 * y);
+    nodes[k].setZ(r3 * z);
+//    printf ( "%6f  %6f  %6f\n", r1 * x, r2 * y, r3 * z );
+  }
+
+    //Last Node
+    nodes[n].setX(0.0);
+    nodes[n].setY(0.0);
+    nodes[n].setZ(1.0 * r3);
+    //printf ( "%6f  %6f  %6f\n", 0.0, 0.0, 1.0 * r3 );  
+
 }
