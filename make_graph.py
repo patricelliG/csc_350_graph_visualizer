@@ -49,9 +49,9 @@ edge_count = number_of_edges
 
 while edge_count != 0:
     #Pick a random source
-    source = random.randint(0, N)
+    source = random.randint(0, N-1)
     #Pick a random sink
-    sink = random.randint(0, N)
+    sink = random.randint(0, N-1)
     
     edge = str(source) + ' ' + str(sink)
     #Check if this edge is in the list of edges

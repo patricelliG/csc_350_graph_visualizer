@@ -17,7 +17,7 @@
 
 using namespace std;
 
-#define NODE_RADIUS .1
+#define NODE_RADIUS .4
 #define NODE_SLICES 25
 #define NODE_STACKS 25
 
@@ -29,14 +29,12 @@ float rotY = 0.0;
 // Drawing routine.
 void drawScene(void)
 {
-    glClear(GL_COLOR_BUFFER_BIT);
-    glColor3f(0.0, 0.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glColor3f(0.0, 0.25, 1.0);
     glLoadIdentity(); 
     gluLookAt(0.0, 0.0, zoom, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
     glRotatef(rotX, 1.0, 0.0, 0.0);
     glRotatef(rotY, 0.0, 1.0, 0.0);
-    // Modeling transformations.
-    //glTranslatef(0.0, 0.0, 0.0); 
  
     glMatrixMode(GL_MODELVIEW);
     //Draw the nodes
@@ -53,26 +51,28 @@ void drawScene(void)
     //Draw the edges
     Node3D source, sink;
     glLineWidth(1.0);
-    glBegin(GL_LINE_STRIP);
-        glColor3f(0.0, 0.0, 0.0);
+        glColor3f(1.0, 1.0, 1.0);
         for (int i = 0; i < g1.getNumEdges(); i++)
         {
             //Retrieve the source and sink nodes
             source = g1.getNodeAt(g1.getEdgeAt(i).getSource());
             sink = g1.getNodeAt(g1.getEdgeAt(i).getSink());
-            //Draw the line from source to sink
-            glVertex3f(source.getX(), source.getY(), source.getZ());
-            glVertex3f(sink.getX(), sink.getY(), sink.getZ());
+            glBegin(GL_LINE_STRIP);
+                //Draw the line from source to sink
+                glVertex3f(source.getX(), source.getY(), source.getZ());
+                glVertex3f(sink.getX(), sink.getY(), sink.getZ());
+            glEnd();
         }
-    glEnd();
 
     glFlush();
+    glutSwapBuffers();
 }
 
 // Initialization routine.
 void setup(void) 
 {
-    glClearColor(1.0, 1.0, 1.0, 0.0);  
+    glClearColor(0.0, 0.0, 0.0, 0.0);  
+    glEnable(GL_DEPTH_TEST);
     //Initialize the graph
     g1.readInGraph("file.txt");
     g1.computeNodeLocations(); 
@@ -132,7 +132,7 @@ void keyInput(unsigned char key, int x, int y)
 int main(int argc, char **argv) 
 {
     glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB); 
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH); 
     glutInitWindowSize(900, 900);
     glutInitWindowPosition(100, 100); 
     glutCreateWindow("box.cpp");
