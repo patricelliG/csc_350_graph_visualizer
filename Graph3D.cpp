@@ -1,7 +1,8 @@
 #include "Graph3D.h"
 #include <stdlib.h>
 #include <math.h> 
-#define PI 3.1415926
+
+#define PI 3.1415926 // For computing the point locations on the sphere
 
 float Node3D::getX()
 {
@@ -53,6 +54,8 @@ void Edge3D::setSink(int sink)
     this->sink = sink;
 }
 
+// This method populates its Graph components using
+// the data recieved in the text file passed as a paramater
 void Graph3D::readInGraph(string file)
 {
     //Open the file
@@ -103,6 +106,7 @@ void Graph3D::readInGraph(string file)
     }
     else
     {
+        // Something went wrong
         cout << "Input file error: Unable to open the specified file." << endl;
     }
 }
@@ -137,11 +141,13 @@ Edge3D Graph3D::getEdgeAt(int index)
     return edges[index];
 }
 
-//This function computes the location of each node
-//The location scales according to how many nodes are in the graph
+// This function computes the location of each node
+// The location scales according to how many nodes are in the graph
+// The algorithm implemented below was designed by Saff and Kuijlaars
+// I have modified this algorithm slightly to fit this programs needs
 void Graph3D::computeNodeLocations()
 {
-    int radiusModifier = 10;
+    int radiusModifier = 10; // The radius of the sphere
     int N = numNodes;
     float s = 3.6 / sqrt(N);
     float dz = 2.0 / N;
@@ -151,6 +157,7 @@ void Graph3D::computeNodeLocations()
     for (int k = 0; k < N; k++)
     {
         r = sqrt(1 - z * z);
+        // Set node k's coordinates to the calculated points
         nodes[k].setX(cos(llong) * r * radiusModifier);
         nodes[k].setY(sin(llong) * r * radiusModifier);
         nodes[k].setZ(z * radiusModifier);

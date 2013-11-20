@@ -30,7 +30,7 @@ float rotY = 0.0;
 void drawScene(void)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glColor3f(0.0, 0.25, 1.0);
+    glColor3f(0.0, 0.3, 0.8);
     glLoadIdentity(); 
     gluLookAt(0.0, 0.0, zoom, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
     glRotatef(rotX, 1.0, 0.0, 0.0);
@@ -43,7 +43,7 @@ void drawScene(void)
         glPushMatrix();
         //Move it into position
         glTranslatef(g1.getNodeAt(i).getX(), g1.getNodeAt(i).getY(), g1.getNodeAt(i).getZ());
-        //Render the spere
+        //Render the node 
         glutSolidSphere(NODE_RADIUS, NODE_SLICES, NODE_STACKS);
         glPopMatrix();
     }
@@ -73,8 +73,16 @@ void setup(void)
 {
     glClearColor(0.0, 0.0, 0.0, 0.0);  
     glEnable(GL_DEPTH_TEST);
-    //Initialize the graph
-    g1.readInGraph("file.txt");
+}
+
+//Initialize the graph
+void initGraph()
+{
+    // Get the file name
+    string fileName = "";
+    cout << "Enter the file to read from:" << endl;
+    cin >> fileName;
+    g1.readInGraph(fileName);
     g1.computeNodeLocations(); 
 }
     
@@ -128,9 +136,19 @@ void keyInput(unsigned char key, int x, int y)
     }
 }
 
+void printInteraction(void)
+{
+    cout << "Interaction:" << endl;
+    cout << "Press Q or E to zoom in / out." << endl;
+    cout << "Press A or D to rotate the graph about the Y axix." << endl;
+    cout << "Press W or S to rotate the graph about the X axix." << endl;
+}
+
 // Main routine.
 int main(int argc, char **argv) 
 {
+    initGraph();
+    printInteraction();
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH); 
     glutInitWindowSize(900, 900);
