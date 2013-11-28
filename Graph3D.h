@@ -36,13 +36,18 @@ public:
     int getSource(void);
     // Return this edges sink node
     int getSink(void);
+    // Get this edges draw status
+    bool getDrawStatus(void);
     // Set this edges source 
     void setSource(int);
     // Set this edges sink
     void setSink(int);
+    // Set this edges draw status
+    void setDrawStatus(bool);
 private:
     int source;
     int sink;
+    bool drawStatus; // true when this edges is to be draw, false if not
 };
 
 class Graph3D {
@@ -63,6 +68,10 @@ public:
     Edge3D getEdgeAt(int);
     // Calculate the positions of the nodes evenly dispursed on a sphere
     void computeNodeLocations(void);
+    // Modify the graph to draw reflecting a selection
+    void modify(int);
+    // Clear any previous modifications
+    void reset(void);
 private:
     vector<Node3D> nodes; // Container to hold this graph's nodes
     vector<Edge3D> edges; // Container to hold this graph's edges

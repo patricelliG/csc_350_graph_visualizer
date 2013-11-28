@@ -54,6 +54,11 @@ int Edge3D::getSink()
     return sink;
 }
 
+bool Edge3D::getDrawStatus()
+{
+    return drawStatus;
+}
+
 void Edge3D::setSource(int source)
 {
     this->source = source;
@@ -62,6 +67,11 @@ void Edge3D::setSource(int source)
 void Edge3D::setSink(int sink)
 {
     this->sink = sink;
+}
+
+void Edge3D::setDrawStatus(bool drawStatus)
+{
+    this->drawStatus = drawStatus;
 }
 
 // This method populates its Graph components using
@@ -88,6 +98,8 @@ void Graph3D::readInGraph(string file)
         for (int i = 0; i < numNodes; i++)
         {
             Node3D newNode;
+            // Set this node's ID
+            newNode.setID(i);
             nodes.push_back(newNode);
         }
 
@@ -151,6 +163,40 @@ Edge3D Graph3D::getEdgeAt(int index)
     return edges[index];
 }
 
+void Graph3D::modify(int selNode)
+{
+    // Iterate though the edges
+    vector<Edge3D>::iterator edgeIterator = edges.begin();
+    while (edgeIterator != edges.end())
+    {
+        if (edgeIterator->getSource() == selNode || edgeIterator->getSink() == selNode)
+        {
+            // This edge is related, set draw enabled
+            edgeIterator->setDrawStatus(true); 
+            edgeIterator++;
+        }
+        else
+        {
+            // This edge is unrelated to the selected node
+            edgeIterator->setDrawStatus(false);
+            edgeIterator++;
+        }
+    }
+
+}
+    
+void Graph3D::reset()
+{
+    // Iterate throught the edges and set draw to true for all
+    vector<Edge3D>::iterator edgeIterator = edges.begin();
+    while (edgeIterator != edges.end())
+    {
+        edgeIterator->setDrawStatus(true);
+        edgeIterator++;
+    }
+}
+
+
 // This function computes the location of each node
 // The location scales according to how many nodes are in the graph
 // The algorithm implemented below was designed by Saff and Kuijlaars
@@ -167,8 +213,6 @@ void Graph3D::computeNodeLocations()
     for (int k = 0; k < N; k++)
     {
         r = sqrt(1 - z * z);
-        // Set node k's ID
-        nodes[k].setID(k);
         // Set node k's coordinates to the calculated points
         nodes[k].setX(cos(llong) * r * radiusModifier);
         nodes[k].setY(sin(llong) * r * radiusModifier);

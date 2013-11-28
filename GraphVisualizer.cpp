@@ -23,7 +23,7 @@ using namespace std;
 
 //Values used in picking
 static int isSelecting = 0; // Are we in selection mode? 1 = yes, 0 = no 
-static unsigned int closestName = 0; // Name of closest hit.
+static unsigned int closestName = -1; // Name of closest hit.
 static int hits; // Number of entries in hit buffer.
 static unsigned int buffer[1024]; // Hit buffer.
 
@@ -31,10 +31,20 @@ Graph3D g1; //The Graph to be visualized
 float zoom = -15.0; //The user's zoom level
 float rotX = 0.0; //The graph's rotation in X
 float rotY = 0.0; //The graph's rotation in Y
+int selectedNode = -1; // The currently selected node. -1 denoted no node is selected
+
+
+    
 
 
 void drawGraph()
 {
+    // If a node is selected, find out which edges and nodes are effected
+    if (selectedNode != -1)
+        g1.modify(selectedNode);    
+    else
+        g1.reset();
+
     glLoadIdentity(); 
     gluLookAt(0.0, 0.0, zoom, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
     glRotatef(rotX, 1.0, 0.0, 0.0);
@@ -44,6 +54,8 @@ void drawGraph()
     //Draw the nodes
     for (int i = 0; i < g1.getNumNodes(); i++)
     {
+        if (isSelecting)
+            glLoadName(g1.getNodeAt(i).getID());
         glPushMatrix();
         //Move it into position
         glTranslatef(g1.getNodeAt(i).getX(), g1.getNodeAt(i).getY(), g1.getNodeAt(i).getZ());
@@ -51,8 +63,6 @@ void drawGraph()
         glutSolidSphere(NODE_RADIUS, NODE_SLICES, NODE_STACKS);
         glPopMatrix();
         //If we are is selection mode, get the ID
-        if (isSelecting)
-            glLoadName(g1.getNodeAt(i).getID());
     }
 
     //Draw the edges
@@ -61,16 +71,19 @@ void drawGraph()
         glColor3f(1.0, 1.0, 1.0);
         for (int i = 0; i < g1.getNumEdges(); i++)
         {
-            //Retrieve the source and sink nodes
-            source = g1.getNodeAt(g1.getEdgeAt(i).getSource());
-            sink = g1.getNodeAt(g1.getEdgeAt(i).getSink());
-            glBegin(GL_LINE_STRIP);
-                //Draw the line from source to sink
-                glVertex3f(source.getX(), source.getY(), source.getZ());
-                glVertex3f(sink.getX(), sink.getY(), sink.getZ());
-            glEnd();
+            //Check to see if this edge should be drawn
+            if (g1.getEdgeAt(i).getDrawStatus())
+            {
+                //Retrieve the source and sink nodes
+                source = g1.getNodeAt(g1.getEdgeAt(i).getSource());
+                sink = g1.getNodeAt(g1.getEdgeAt(i).getSink());
+                glBegin(GL_LINE_STRIP);
+                    //Draw the line from source to sink
+                    glVertex3f(source.getX(), source.getY(), source.getZ());
+                    glVertex3f(sink.getX(), sink.getY(), sink.getZ());
+                glEnd();
+            }
         }
-
     glutSwapBuffers();
 }
 
@@ -103,6 +116,7 @@ void initGraph()
     g1.readInGraph(fileName);
     g1.computeNodeLocations(); 
 }
+
     
 // OpenGL window reshape routine.
 void resize(int w, int h)
@@ -161,7 +175,7 @@ void findClosestHit(int hits, unsigned int buffer[])
    
    minZ= 0xffffffff; // 2^32 - 1
    ptr = buffer;
-   closestName = 0;
+   closestName = -1;
    for (int i = 0; i < hits; i++)                   
    {
       ptr++;
@@ -174,6 +188,8 @@ void findClosestHit(int hits, unsigned int buffer[])
       }
       else ptr += 3;
    }
+   // Set selected node
+   selectedNode = closestName;
 }
 
 // The mouse callback routine.
@@ -208,7 +224,6 @@ void pickFunction(int button, int state, int x, int y)
    drawGraph();
 
    hits = glRenderMode(GL_RENDER); // Return to rendering mode, returning number of hits.
-   cout << "HITS: " << hits << endl;
 
    // Restore viewing volume of the resize routine and return to modelview mode.
    glMatrixMode(GL_PROJECTION);
