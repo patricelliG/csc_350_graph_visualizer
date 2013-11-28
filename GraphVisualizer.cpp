@@ -34,9 +34,6 @@ float rotY = 0.0; //The graph's rotation in Y
 int selectedNode = -1; // The currently selected node. -1 denoted no node is selected
 
 
-    
-
-
 void drawGraph()
 {
     // If a node is selected, find out which edges and nodes are effected
@@ -54,15 +51,43 @@ void drawGraph()
     //Draw the nodes
     for (int i = 0; i < g1.getNumNodes(); i++)
     {
+        //If we are is selection mode, get the ID
         if (isSelecting)
             glLoadName(g1.getNodeAt(i).getID());
+        // See if a node is selected
+        if (selectedNode != -1)
+        {
+            // We have a node selected
+            // See what drawing state the node is in
+            // Set the drawing color accordingly
+            if (g1.getNodeAt(i).getDrawState() == 1)
+            {
+                // This is the selected node
+                glColor3f(0.0, 1.0, 1.0);
+            }
+            else if (g1.getNodeAt(i).getDrawState() == 2)
+            { 
+                // This node is connected to the selected node
+                glColor3f(0.0, 0.0, 0.5);
+            }
+            else 
+            {
+                // This node is not directly connected to the selected node
+                glColor3f(0.1, 0.1, 0.1);
+            }
+        }
+        else
+        {
+            // No node is selected, use defualt colors
+            glColor3f(0.0, 0.0, 0.8);
+        }
+
         glPushMatrix();
         //Move it into position
         glTranslatef(g1.getNodeAt(i).getX(), g1.getNodeAt(i).getY(), g1.getNodeAt(i).getZ());
         //Render the node 
         glutSolidSphere(NODE_RADIUS, NODE_SLICES, NODE_STACKS);
         glPopMatrix();
-        //If we are is selection mode, get the ID
     }
 
     //Draw the edges
@@ -91,7 +116,7 @@ void drawGraph()
 void drawScene(void)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glColor3f(0.0, 0.3, 0.8);
+//    glColor3f(0.0, 0.3, 0.8);
 
     //Draw graph is rendering mode
     isSelecting = 0;
@@ -253,7 +278,7 @@ int main(int argc, char **argv)
     printInteraction();
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH); 
-    glutInitWindowSize(500, 500);
+    glutInitWindowSize(800, 800);
     glutInitWindowPosition(100, 100); 
     glutCreateWindow("GraphVisualizer.cpp");
     setup(); 

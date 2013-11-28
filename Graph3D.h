@@ -15,6 +15,8 @@ public:
     float getZ(void);
     // Return the ID of this node
     int getID(void);
+    // Return the draw state of this node
+    int getDrawState(void);
     // Set the x coordinate to float
     void setX(float);
     // Set the y coordinate to float
@@ -23,11 +25,14 @@ public:
     void setZ(float);
     // Set the ID of this node
     void setID(int);
+    // Set the draw state of this node
+    void setDrawState(int);
 private:
     float x; // This node's x coordinate
     float y; // This node's y coordinate
     float z; // This node's z coordinate
     int ID;
+    int drawState; 
 };
 
 class Edge3D {

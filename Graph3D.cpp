@@ -24,6 +24,11 @@ int Node3D::getID()
     return ID;
 }
 
+int Node3D::getDrawState()
+{
+    return drawState;
+}
+
 void Node3D::setX(float x)
 {
     this->x = x; 
@@ -37,6 +42,11 @@ void Node3D::setY(float y)
 void Node3D::setZ(float z)
 {
     this->z = z; 
+}
+
+void Node3D::setDrawState(int drawState)
+{
+    this->drawState = drawState;
 }
 
 void Node3D::setID(int ID)
@@ -165,6 +175,17 @@ Edge3D Graph3D::getEdgeAt(int index)
 
 void Graph3D::modify(int selNode)
 {
+    // Clear all node states 
+    vector<Node3D>::iterator nodeIterator = nodes.begin();
+    while (nodeIterator != nodes.end())
+    {
+        nodeIterator->setDrawState(0);
+        nodeIterator++;
+    }
+
+    // Set the selected node to draw state 1
+    // Indicating that this was the selected node
+    nodes[selNode].setDrawState(1);
     // Iterate though the edges
     vector<Edge3D>::iterator edgeIterator = edges.begin();
     while (edgeIterator != edges.end())
@@ -173,6 +194,13 @@ void Graph3D::modify(int selNode)
         {
             // This edge is related, set draw enabled
             edgeIterator->setDrawStatus(true); 
+            // Add the linked node to draw state 2
+            // Indicating it is connected to the selected node
+            if (edgeIterator->getSource() == selNode)
+                nodes[edgeIterator->getSink()].setDrawState(2);
+            else
+                nodes[edgeIterator->getSource()].setDrawState(2);
+            // Step to next edge 
             edgeIterator++;
         }
         else
@@ -182,7 +210,6 @@ void Graph3D::modify(int selNode)
             edgeIterator++;
         }
     }
-
 }
     
 void Graph3D::reset()
