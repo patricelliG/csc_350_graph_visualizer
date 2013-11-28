@@ -13,16 +13,21 @@ public:
     float getY(void);
     // Return z coordinate
     float getZ(void);
+    // Return the ID of this node
+    int getID(void);
     // Set the x coordinate to float
     void setX(float);
     // Set the y coordinate to float
     void setY(float);
     // Set the z coordinate to float
     void setZ(float);
+    // Set the ID of this node
+    void setID(int);
 private:
     float x; // This node's x coordinate
     float y; // This node's y coordinate
     float z; // This node's z coordinate
+    int ID;
 };
 
 class Edge3D {

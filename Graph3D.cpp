@@ -19,6 +19,11 @@ float Node3D::getZ()
     return z;
 }
 
+int Node3D::getID()
+{
+    return ID;
+}
+
 void Node3D::setX(float x)
 {
     this->x = x; 
@@ -32,6 +37,11 @@ void Node3D::setY(float y)
 void Node3D::setZ(float z)
 {
     this->z = z; 
+}
+
+void Node3D::setID(int ID)
+{
+    this->ID = ID;
 }
 
 int Edge3D::getSource()
@@ -157,6 +167,8 @@ void Graph3D::computeNodeLocations()
     for (int k = 0; k < N; k++)
     {
         r = sqrt(1 - z * z);
+        // Set node k's ID
+        nodes[k].setID(k);
         // Set node k's coordinates to the calculated points
         nodes[k].setX(cos(llong) * r * radiusModifier);
         nodes[k].setY(sin(llong) * r * radiusModifier);
