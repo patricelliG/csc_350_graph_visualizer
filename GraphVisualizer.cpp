@@ -7,6 +7,7 @@
 /////////////////////////////////
 
 #include <iostream>
+#include <cmath>
 #include "Graph3D.h"
 
 #ifdef __APPLE__
@@ -17,22 +18,23 @@
 
 using namespace std;
 
-#define NODE_RADIUS .4
 #define NODE_SLICES 25
 #define NODE_STACKS 25
+#define NODE_RADIUS 2.0
+#define EDGE_WIDTH 1.5
 
-//Values used in picking
 static int isSelecting = 0; // Are we in selection mode? 1 = yes, 0 = no 
 static unsigned int closestName = -1; // Name of closest hit.
 static int hits; // Number of entries in hit buffer.
 static unsigned int buffer[1024]; // Hit buffer.
-
-Graph3D g1; //The Graph to be visualized
-float zoom = -15.0; //The user's zoom level
-float rotX = 0.0; //The graph's rotation in X
-float rotY = 0.0; //The graph's rotation in Y
-int selectedNode = -1; // The currently selected node. -1 denoted no node is selected
-
+static Graph3D g1; //The Graph to be visualized
+static float zoom = 0.0; //The user's zoom level
+static float zoomAmount = 0.0; //The amount of change in zoom on a keypress 
+static float rotX = 0.0; //The graph's rotation in X
+static float rotY = 0.0; //The graph's rotation in Y
+static int selectedNode = -1; // The currently selected node. -1 denotes no node is selected
+static float nodeRadius = 1.0;
+static float far = 0.0; // The depth of the frustrum, this needs to scale with the graph
 
 void drawGraph()
 {
@@ -79,20 +81,20 @@ void drawGraph()
         else
         {
             // No node is selected, use defualt colors
-            glColor3f(0.0, 0.0, 0.8);
+            glColor3f(0.0, 0.0, 1.0);
         }
 
         glPushMatrix();
         //Move it into position
         glTranslatef(g1.getNodeAt(i).getX(), g1.getNodeAt(i).getY(), g1.getNodeAt(i).getZ());
-        //Render the node 
-        glutSolidSphere(NODE_RADIUS, NODE_SLICES, NODE_STACKS);
+        //Render the node unless its in state  
+        glutSolidSphere(nodeRadius, NODE_SLICES, NODE_STACKS);
         glPopMatrix();
     }
 
     //Draw the edges
     Node3D source, sink;
-    glLineWidth(1.0);
+    glLineWidth(EDGE_WIDTH);
         glColor3f(1.0, 1.0, 1.0);
         for (int i = 0; i < g1.getNumEdges(); i++)
         {
@@ -131,15 +133,25 @@ void setup(void)
     glEnable(GL_DEPTH_TEST);
 }
 
-//Initialize the graph
+//Initialize the graph 
 void initGraph()
 {
     // Get the file name
     string fileName = "";
     cout << "Enter the file to read from:" << endl;
     cin >> fileName;
+    // Create the graph from the file
     g1.readInGraph(fileName);
+    // Compute the node lacatios
     g1.computeNodeLocations(); 
+    // Compute node radius
+    nodeRadius += ((float)(g1.getNumNodes()) / 50.0); 
+    // Initialize zoom level on start
+    zoom = -g1.getNumNodes() * 3;
+    // Compute zoom amount
+    zoomAmount = (float)g1.getNumNodes() / 10.0;
+    // Compute the required frustum depth
+    far = 5 * (float)g1.getNumNodes(); 
 }
 
     
@@ -149,7 +161,7 @@ void resize(int w, int h)
     glViewport(0, 0, (GLsizei)w, (GLsizei)h); 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glFrustum(-5.0, 5.0, -5.0, 5.0, 5.0, 100.0);
+    glFrustum(-5.0, 5.0, -5.0, 5.0, 5.0, far);
  
     glMatrixMode(GL_MODELVIEW);
 }
@@ -160,29 +172,29 @@ void keyInput(unsigned char key, int x, int y)
     switch(key) 
     {
         case 97:
-            rotY += 1;
+            rotY += 2;
             glutPostRedisplay();
             break;
         case 100:
-            rotY -= 1;
+            rotY -= 2;
             glutPostRedisplay();
             break;
         case 101:
             //Zoom out
-            zoom += .25;
+            zoom += zoomAmount;
             glutPostRedisplay();
             break;
         case 113:
             //Zoom in
-            zoom -= .25;
+            zoom -= zoomAmount;
             glutPostRedisplay();
             break;
         case 115:
-            rotX += 1;
+            rotX += 2;
             glutPostRedisplay();
             break;
         case 119:
-            rotX -= 1;
+            rotX -= 2;
             glutPostRedisplay();
             break;
         case 27:
@@ -236,7 +248,7 @@ void pickFunction(int button, int state, int x, int y)
    // Define a viewing volume corresponding to selecting in 3 x 3 region around the cursor.
    glLoadIdentity();
    gluPickMatrix((float)x, (float)(viewport[3] - y), 3.0, 3.0, viewport);
-   glFrustum(-5.0, 5.0, -5.0, 5.0, 5.0, 100.0); // Copied from the reshape routine.
+   glFrustum(-5.0, 5.0, -5.0, 5.0, 5.0, far); // Copied from the reshape routine.
    
    glMatrixMode(GL_MODELVIEW); // Return to modelview mode before drawing.
    glLoadIdentity();

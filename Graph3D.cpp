@@ -230,7 +230,7 @@ void Graph3D::reset()
 // I have modified this algorithm slightly to fit this programs needs
 void Graph3D::computeNodeLocations()
 {
-    int radiusModifier = 10; // The radius of the sphere
+    int radiusModifier = this->getNumNodes(); // The radius of the sphere
     int N = numNodes;
     float s = 3.6 / sqrt(N);
     float dz = 2.0 / N;
