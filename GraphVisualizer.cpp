@@ -3,11 +3,13 @@
 //
 // This program draws a 3D graph about the origin. 
 //
-// Modified from box.cpp, viewports.cpp and ballAndTorusPicking.cpp by Sumanta Guha.
+// Modified from box.cpp, viewports.cpp, fonts.cpp and ballAndTorusPicking.cpp by Sumanta Guha.
 /////////////////////////////////
 
 #include <iostream>
 #include <cmath>
+#include <string>
+#include <sstream>
 #include "Graph3D.h"
 
 #ifdef __APPLE__
@@ -24,6 +26,7 @@ using namespace std;
 #define EDGE_WIDTH 1.5
 #define WINDOW_WIDTH 1600
 #define WINDOW_HEIGHT 800
+#define BITMAP_FONT GLUT_BITMAP_9_BY_15
 
 static int isSelecting = 0; // Are we in selection mode? 1 = yes, 0 = no 
 static unsigned int closestName = -1; // Name of closest hit.
@@ -38,27 +41,64 @@ static float rotY = 0.0; //The graph's rotation in Y
 static int selectedNode = -1; // The currently selected node. -1 denotes no node is selected
 static float nodeRadius = 1.0;
 static float far = 0.0; // The depth of the frustrum, this needs to scale with the graph
+static string fileName = ""; // The name of the input file
 
 
 // Routine to draw a bitmap character string.
-void writeBitmapString(void *font, char *string)
+void printString(string str)
 {  
-   char *c;
-   for (c = string; *c != '\0'; c++) glutBitmapCharacter(font, *c);
+    char c;
+    int cVal;
+    for (int i = 0; i < str.size(); i++)
+    {
+        // Get first character
+        c = str[i];
+        // Get this char's int
+        cVal = (int)(c); 
+        // Print it 
+        glutBitmapCharacter(BITMAP_FONT, cVal);
+    }
+}
+
+// Method to convert int to string
+string intToString(int num)
+{
+    stringstream ss;
+    ss << num;
+    return ss.str();
 }
 
 void drawGraph()
 {
     // Draw the information pane
     glViewport(0, 0, WINDOW_WIDTH / 2.0, WINDOW_HEIGHT);
-    //glutSolidSphere(nodeRadius, NODE_SLICES, NODE_STACKS);
+
     // Display the information text, must take into acount the position of the camera
+
+    // Display the file name
+    string file = "FILE_NAME: "; 
+    file.append(fileName);
     glRasterPos3f(WINDOW_WIDTH / 120, WINDOW_HEIGHT / 60 , zoom + 15.0);
-    writeBitmapString(GLUT_BITMAP_8_BY_13, "GLUT_BITMAP_8_BY_13");
+    printString(file);
+
+    // Display the number of nodes
+    string nodes = "NODE COUNT: "; 
+    nodes.append(intToString(g1.getNumNodes()));
     glRasterPos3f(WINDOW_WIDTH / 120, WINDOW_HEIGHT / 65 , zoom + 15.0);
-    writeBitmapString(GLUT_BITMAP_8_BY_13, "GLUT_BITMAP_8_BY_13");
+    printString(nodes);
+
+    // Display the number of edges
+    string edges = "EDGE COUNT: ";
+    edges.append(intToString(g1.getNumEdges()));
     glRasterPos3f(WINDOW_WIDTH / 120, WINDOW_HEIGHT / 70 , zoom + 15.0);
-    writeBitmapString(GLUT_BITMAP_8_BY_13, "GLUT_BITMAP_8_BY_13");
+    printString(edges);
+
+    // Display the selected node ID
+    string node = "SELECTED NODE: ";
+    node.append(intToString(selectedNode));
+    glRasterPos3f(WINDOW_WIDTH / 120, WINDOW_HEIGHT / 75 , zoom + 15.0);
+    printString(node);
+    
 
     // Draw the graph display pane
     glViewport(WINDOW_WIDTH / 2.0, 0, WINDOW_WIDTH / 2.0, WINDOW_HEIGHT);
@@ -172,7 +212,6 @@ void setup(void)
 void initGraph()
 {
     // Get the file name
-    string fileName = "";
     cout << "Enter the file to read from:" << endl;
     cin >> fileName;
     // Create the graph from the file
