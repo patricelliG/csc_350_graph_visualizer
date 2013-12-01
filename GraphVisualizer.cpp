@@ -3,7 +3,7 @@
 //
 // This program draws a 3D graph about the origin. 
 //
-// Modified from box.cpp and ballAndTorusPicking.cpp by Sumanta Guha.
+// Modified from box.cpp, viewports.cpp and ballAndTorusPicking.cpp by Sumanta Guha.
 /////////////////////////////////
 
 #include <iostream>
@@ -22,6 +22,8 @@ using namespace std;
 #define NODE_STACKS 25
 #define NODE_RADIUS 2.0
 #define EDGE_WIDTH 1.5
+#define WINDOW_WIDTH 1600
+#define WINDOW_HEIGHT 800
 
 static int isSelecting = 0; // Are we in selection mode? 1 = yes, 0 = no 
 static unsigned int closestName = -1; // Name of closest hit.
@@ -29,6 +31,7 @@ static int hits; // Number of entries in hit buffer.
 static unsigned int buffer[1024]; // Hit buffer.
 static Graph3D g1; //The Graph to be visualized
 static float zoom = 0.0; //The user's zoom level
+static float zOffset = 0.0; //The user's zoom level
 static float zoomAmount = 0.0; //The amount of change in zoom on a keypress 
 static float rotX = 0.0; //The graph's rotation in X
 static float rotY = 0.0; //The graph's rotation in Y
@@ -36,24 +39,53 @@ static int selectedNode = -1; // The currently selected node. -1 denotes no node
 static float nodeRadius = 1.0;
 static float far = 0.0; // The depth of the frustrum, this needs to scale with the graph
 
+
+// Routine to draw a bitmap character string.
+void writeBitmapString(void *font, char *string)
+{  
+   char *c;
+   for (c = string; *c != '\0'; c++) glutBitmapCharacter(font, *c);
+}
+
 void drawGraph()
 {
+    // Draw the information pane
+    glViewport(0, 0, WINDOW_WIDTH / 2.0, WINDOW_HEIGHT);
+    //glutSolidSphere(nodeRadius, NODE_SLICES, NODE_STACKS);
+    // Display the information text, must take into acount the position of the camera
+    glRasterPos3f(WINDOW_WIDTH / 120, WINDOW_HEIGHT / 60 , zoom + 15.0);
+    writeBitmapString(GLUT_BITMAP_8_BY_13, "GLUT_BITMAP_8_BY_13");
+    glRasterPos3f(WINDOW_WIDTH / 120, WINDOW_HEIGHT / 65 , zoom + 15.0);
+    writeBitmapString(GLUT_BITMAP_8_BY_13, "GLUT_BITMAP_8_BY_13");
+    glRasterPos3f(WINDOW_WIDTH / 120, WINDOW_HEIGHT / 70 , zoom + 15.0);
+    writeBitmapString(GLUT_BITMAP_8_BY_13, "GLUT_BITMAP_8_BY_13");
+
+    // Draw the graph display pane
+    glViewport(WINDOW_WIDTH / 2.0, 0, WINDOW_WIDTH / 2.0, WINDOW_HEIGHT);
+
     // If a node is selected, find out which edges and nodes are effected
     if (selectedNode != -1)
-        g1.modify(selectedNode);    
+        g1.modify(selectedNode); //Modify the graph to reflect the selection
     else
-        g1.reset();
+        g1.reset(); //Not selecting, reset the graph to normal
 
     glLoadIdentity(); 
     gluLookAt(0.0, 0.0, zoom, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+
+    glPushMatrix();
+
+    //Move the graph back to the origin
+    glTranslatef(0.0, 0.0, -zOffset);
+    // Rotate the graph on the X and Y axis as per the user's request
     glRotatef(rotX, 1.0, 0.0, 0.0);
     glRotatef(rotY, 0.0, 1.0, 0.0);
  
-    glMatrixMode(GL_MODELVIEW);
+    //glMatrixMode(GL_MODELVIEW);
+    
     //Draw the nodes
     for (int i = 0; i < g1.getNumNodes(); i++)
     {
-        //If we are is selection mode, get the ID
+        //If we are in selection mode, get the ID
         if (isSelecting)
             glLoadName(g1.getNodeAt(i).getID());
         // See if a node is selected
@@ -84,11 +116,13 @@ void drawGraph()
             glColor3f(0.0, 0.0, 1.0);
         }
 
+        // Put a copy of the martrix on the stack
         glPushMatrix();
-        //Move it into position
+        // Move this node into position
         glTranslatef(g1.getNodeAt(i).getX(), g1.getNodeAt(i).getY(), g1.getNodeAt(i).getZ());
-        //Render the node unless its in state  
+        // Render the node 
         glutSolidSphere(nodeRadius, NODE_SLICES, NODE_STACKS);
+        // Restore the previous matrix
         glPopMatrix();
     }
 
@@ -111,6 +145,9 @@ void drawGraph()
                 glEnd();
             }
         }
+    // Move the graph back to its level along the z axis
+    glTranslatef(0.0,0.0, zOffset);
+    glPopMatrix();
     glutSwapBuffers();
 }
 
@@ -118,8 +155,6 @@ void drawGraph()
 void drawScene(void)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//    glColor3f(0.0, 0.3, 0.8);
-
     //Draw graph is rendering mode
     isSelecting = 0;
     drawGraph();
@@ -181,12 +216,14 @@ void keyInput(unsigned char key, int x, int y)
             break;
         case 101:
             //Zoom out
-            zoom += zoomAmount;
+            //zoom += zoomAmount;
+            zOffset += zoomAmount;
             glutPostRedisplay();
             break;
         case 113:
             //Zoom in
-            zoom -= zoomAmount;
+            //zoom -= zoomAmount;
+            zOffset -= zoomAmount;
             glutPostRedisplay();
             break;
         case 115:
@@ -290,7 +327,7 @@ int main(int argc, char **argv)
     printInteraction();
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH); 
-    glutInitWindowSize(800, 800);
+    glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
     glutInitWindowPosition(100, 100); 
     glutCreateWindow("GraphVisualizer.cpp");
     setup(); 
