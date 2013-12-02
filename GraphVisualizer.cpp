@@ -3,7 +3,7 @@
 //
 // This program draws a 3D graph about the origin. 
 //
-// Modified from box.cpp, viewports.cpp, fonts.cpp and ballAndTorusPicking.cpp by Sumanta Guha.
+// Modified from box.cpp, viewports.cpp, fonts.cpp, sphereInBox2.cpp and ballAndTorusPicking.cpp by Sumanta Guha.
 /////////////////////////////////
 
 #include <iostream>
@@ -70,11 +70,12 @@ string intToString(int num)
 
 void drawGraph()
 {
+
     // Draw the information pane
+    glDisable(GL_LIGHTING);
     glViewport(0, 0, WINDOW_WIDTH / 2.0, WINDOW_HEIGHT);
 
     // Display the information text, must take into acount the position of the camera
-
     // Display the file name
     string file = "FILE_NAME: "; 
     file.append(fileName);
@@ -102,6 +103,7 @@ void drawGraph()
 
     // Draw the graph display pane
     glViewport(WINDOW_WIDTH / 2.0, 0, WINDOW_WIDTH / 2.0, WINDOW_HEIGHT);
+    glEnable(GL_LIGHTING);
 
     // If a node is selected, find out which edges and nodes are effected
     if (selectedNode != -1)
@@ -120,11 +122,22 @@ void drawGraph()
     glRotatef(rotX, 1.0, 0.0, 0.0);
     glRotatef(rotY, 0.0, 1.0, 0.0);
  
-    //glMatrixMode(GL_MODELVIEW);
+    // Material property vectors for each type of node.
+    float matAmbAndDifSelected[] = {0.0, 0.5, 0.5, 1.0}; // Selected node
+    float matAmbAndDifRelated[] = {0.0, 0.0, 0.5, 1.0}; // Node with connecting edge to selected node
+    float matAmbAndDifNormal[] = {0.9, 0.9, 0.9, 1.0}; // Normal node 
+    float matAmbAndDifDark[] = {0.0, 0.0, 0.0, 1.0}; // DarkNode
+    float matSpec[] = { 1.0, 1.0, 1.0, 1.0 };
+    float matShine[] = { 50.0 };
     
     //Draw the nodes
     for (int i = 0; i < g1.getNumNodes(); i++)
     {
+        // Put a copy of the martrix on the stack
+        glPushMatrix();
+        // Move this node into position
+        glTranslatef(g1.getNodeAt(i).getX(), g1.getNodeAt(i).getY(), g1.getNodeAt(i).getZ());
+
         //If we are in selection mode, get the ID
         if (isSelecting)
             glLoadName(g1.getNodeAt(i).getID());
@@ -137,36 +150,57 @@ void drawGraph()
             if (g1.getNodeAt(i).getDrawState() == 1)
             {
                 // This is the selected node
-                glColor3f(0.0, 1.0, 1.0);
+                //glColor3f(0.0, 1.0, 1.0);
+                // Material properties of the sphere (only the front is ever seen).
+                glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, matAmbAndDifSelected);
+                // Cull the back faces of the sphere.
+                glEnable(GL_CULL_FACE);
+                glCullFace(GL_BACK);
+                // Render the node
+                glutSolidSphere(nodeRadius, NODE_SLICES, NODE_STACKS);
+                glDisable(GL_CULL_FACE);
             }
             else if (g1.getNodeAt(i).getDrawState() == 2)
             { 
                 // This node is connected to the selected node
-                glColor3f(0.0, 0.0, 0.5);
+                //glColor3f(0.0, 0.0, 0.5);
+                // Material properties of the sphere (only the front is ever seen).
+                glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, matAmbAndDifRelated);
+                // Cull the back faces of the sphere.
+                glEnable(GL_CULL_FACE);
+                glCullFace(GL_BACK);
+                // Render the node
+                glutSolidSphere(nodeRadius, NODE_SLICES, NODE_STACKS);
+                glDisable(GL_CULL_FACE);
             }
             else 
             {
                 // This node is not directly connected to the selected node
-                glColor3f(0.1, 0.1, 0.1);
+                // Material properties of the sphere (only the front is ever seen).
+                // Dont render anything
+                glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, matAmbAndDifDark);
             }
         }
         else
         {
             // No node is selected, use defualt colors
-            glColor3f(0.0, 0.0, 1.0);
+            //glColor3f(0.0, 0.0, 1.0);
+            // Material properties of the sphere (only the front is ever seen).
+            glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, matAmbAndDifNormal);
+            // Cull the back faces of the sphere.
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_BACK);
+            // Render the node
+            glutSolidSphere(nodeRadius, NODE_SLICES, NODE_STACKS);
+            glDisable(GL_CULL_FACE);
         }
-
-        // Put a copy of the martrix on the stack
-        glPushMatrix();
-        // Move this node into position
-        glTranslatef(g1.getNodeAt(i).getX(), g1.getNodeAt(i).getY(), g1.getNodeAt(i).getZ());
-        // Render the node 
-        glutSolidSphere(nodeRadius, NODE_SLICES, NODE_STACKS);
+        
         // Restore the previous matrix
         glPopMatrix();
     }
 
     //Draw the edges
+    glDisable(GL_LIGHTING);
     Node3D source, sink;
     glLineWidth(EDGE_WIDTH);
         glColor3f(1.0, 1.0, 1.0);
@@ -187,6 +221,7 @@ void drawGraph()
         }
     // Move the graph back to its level along the z axis
     glTranslatef(0.0,0.0, zOffset);
+    glEnable(GL_LIGHTING);
     glPopMatrix();
     glutSwapBuffers();
 }
@@ -197,6 +232,7 @@ void drawScene(void)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     //Draw graph is rendering mode
     isSelecting = 0;
+
     drawGraph();
 }
 
@@ -206,6 +242,31 @@ void setup(void)
 {
     glClearColor(0.0, 0.0, 0.0, 0.0);  
     glEnable(GL_DEPTH_TEST);
+
+    // Turn on OpenGL lighting.
+    glEnable(GL_LIGHTING);
+
+    // Light property vectors.
+    float lightAmb[] = { 0.0, 0.0, 0.0, 1.0 };
+    float lightDifAndSpec[] = { 1.0, 1.0, 1.0, 1.0 };
+    float lightPos[] = { 0.0, 1.5, 3.0, 1.0 };
+    float globAmb[] = { 0.2, 0.2, 0.2, 1.0 };
+ 
+    // Light properties.
+    glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmb);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDifAndSpec);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, lightDifAndSpec);
+    glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
+ 
+    glEnable(GL_LIGHT0); // Enable particular light source.
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globAmb); // Global ambient light.
+    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE); // Enable two-sided lighting.
+    glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE); // Enable local viewpoint.
+ 
+    // Enable two vertex arrays: position and normal.
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_NORMAL_ARRAY);
+ 
 }
 
 //Initialize the graph 
@@ -378,5 +439,3 @@ int main(int argc, char **argv)
  
     return 0;  
 }
-
-
