@@ -96,7 +96,10 @@ void drawGraph()
 
     // Display the selected node ID
     string node = "SELECTED NODE: ";
-    node.append(intToString(selectedNode));
+    if (selectedNode != -1)
+        node.append(intToString(selectedNode));
+    else
+        node.append("NONE");
     glRasterPos3f(WINDOW_WIDTH / 120, WINDOW_HEIGHT / 75 , zoom + 15.0);
     printString(node);
     
@@ -125,7 +128,7 @@ void drawGraph()
     // Material property vectors for each type of node.
     float matAmbAndDifSelected[] = {0.0, 0.5, 0.5, 1.0}; // Selected node
     float matAmbAndDifRelated[] = {0.0, 0.0, 0.5, 1.0}; // Node with connecting edge to selected node
-    float matAmbAndDifNormal[] = {0.9, 0.9, 0.9, 1.0}; // Normal node 
+    float matAmbAndDifNormal[] = {0.0, 0.0, 0.9, 1.0}; // Normal node 
     float matAmbAndDifDark[] = {0.0, 0.0, 0.0, 1.0}; // DarkNode
     float matSpec[] = { 1.0, 1.0, 1.0, 1.0 };
     float matShine[] = { 50.0 };
@@ -212,7 +215,7 @@ void drawGraph()
                 //Retrieve the source and sink nodes
                 source = g1.getNodeAt(g1.getEdgeAt(i).getSource());
                 sink = g1.getNodeAt(g1.getEdgeAt(i).getSink());
-                glBegin(GL_LINE_STRIP);
+                glBegin(GL_LINES);
                     //Draw the line from source to sink
                     glVertex3f(source.getX(), source.getY(), source.getZ());
                     glVertex3f(sink.getX(), sink.getY(), sink.getZ());
@@ -240,7 +243,14 @@ void drawScene(void)
 // Initialization routine.
 void setup(void) 
 {
+    // Enable anti aliasing
+    glEnable(GL_LINE_SMOOTH); 
+    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST); 
+
+    //Set fill color
     glClearColor(0.0, 0.0, 0.0, 0.0);  
+
+    // Enable depth testing
     glEnable(GL_DEPTH_TEST);
 
     // Turn on OpenGL lighting.
@@ -249,8 +259,8 @@ void setup(void)
     // Light property vectors.
     float lightAmb[] = { 0.0, 0.0, 0.0, 1.0 };
     float lightDifAndSpec[] = { 1.0, 1.0, 1.0, 1.0 };
-    float lightPos[] = { 0.0, 1.5, 3.0, 1.0 };
-    float globAmb[] = { 0.2, 0.2, 0.2, 1.0 };
+    float lightPos[] = { 0.0, zoom, 0.0, 1.0 };
+    float globAmb[] = { 0.1, 0.1, 0.1, 1.0 };
  
     // Light properties.
     glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmb);

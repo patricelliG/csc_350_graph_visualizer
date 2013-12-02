@@ -27,7 +27,8 @@ while not valid_answer:
     print 'Enter an integer between 1 and 5 inclusive'
     density = float(raw_input('> '))
     #Check input
-    if density >= 1 and density <=5 and density % 1 == 0:
+    #if density >= 1 and density <=5 and density % 1 == 0:
+    if density >= 1 and density <=5:
         #This is valid
         density = int(density)
         valid_answer = True
@@ -41,7 +42,7 @@ print '.txt will be automaticly appended'
 file_name = str(raw_input('> '))
 
 #Calculate number of edges
-number_of_edges = (N * density)
+number_of_edges = int(N * density)
 
 #Create the random edges
 edges = []
@@ -54,9 +55,10 @@ while edge_count != 0:
     sink = random.randint(0, N-1)
     
     edge = str(source) + ' ' + str(sink)
+    edge_flipped = str(sink) + ' ' + str(source)
     #Check if this edge is in the list of edges
     #Check if this is a self looping edge
-    if not (edge in edges) and (source != sink):
+    if edge not in edges and edge_flipped not in edges and (source != sink):
         #Add this to the list of edges 
         edges.append(edge)
         edge_count = edge_count - 1
