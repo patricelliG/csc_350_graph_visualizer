@@ -1,10 +1,34 @@
-/////////////////////////////////          
+////////////////////////////////////////////////////////////////////////////////////        
+//
+// Gary Patricelli 
+//
+// CSC 350 - Final Project 
+//
 // GraphVisualizer.cpp
 //
-// This program draws a 3D graph about the origin. 
+// This program reads in a file to create a graph. The graph is modeled in three
+// dimensions and the user is able to interact with the graph. Instructions on how
+// to do so are listed below.
+//
+// How to use the program:
+//      Keyboard controls:
+//          Zooming:
+//              'Q' / 'E' = zoom in / sioom out
+//          Rotation on X:
+//              'W' / 'S' = rotate the graph about the 'x' axis
+//          Rotation on Y:
+//              'A' / 'D' = rotate the graph about the 'y' axis
+//      Mouse Controls:
+//          Left click on a node to select it. The graph will enter selection mode
+//          in oder to ease the user in exploring the graph in byte sized pieces.
+//          In oder to exit selection mode, click anywhere outside of the currently
+//          selected node cluster. Note, you may wish to chain clicks together to
+//          explore the graph a node at a time.
+//
 //
 // Modified from box.cpp, viewports.cpp, fonts.cpp, sphereInBox2.cpp and ballAndTorusPicking.cpp by Sumanta Guha.
-/////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////////        
 
 #include <iostream>
 #include <cmath>
@@ -32,15 +56,15 @@ static int isSelecting = 0; // Are we in selection mode? 1 = yes, 0 = no
 static unsigned int closestName = -1; // Name of closest hit.
 static int hits; // Number of entries in hit buffer.
 static unsigned int buffer[1024]; // Hit buffer.
-static Graph3D g1; //The Graph to be visualized
-static float zoom = 0.0; //The user's zoom level
-static float zOffset = 0.0; //The user's zoom level
-static float zoomAmount = 0.0; //The amount of change in zoom on a keypress 
-static float rotX = 0.0; //The graph's rotation in X
-static float rotY = 0.0; //The graph's rotation in Y
+static Graph3D g1; // The Graph to be visualized
+static float zoom = 0.0; // The user's zoom level
+static float zOffset = 0.0; // The graph's position on the 'z' axis 
+static float zoomAmount = 0.0; // The amount of change in zoom on a key press 
+static float rotX = 0.0; // The graph's rotation in X
+static float rotY = 0.0; // The graph's rotation in Y
 static int selectedNode = -1; // The currently selected node. -1 denotes no node is selected
 static float nodeRadius = 1.0;
-static float far = 0.0; // The depth of the frustrum, this needs to scale with the graph
+static float far = 0.0; // The depth of the frustum, this needs to scale with the graph
 static string fileName = ""; // The name of the input file
 
 
@@ -75,7 +99,7 @@ void drawGraph()
     glDisable(GL_LIGHTING);
     glViewport(0, 0, WINDOW_WIDTH / 2.0, WINDOW_HEIGHT);
 
-    // Display the information text, must take into acount the position of the camera
+    // Display the information text, must take into account the position of the camera
     // Display the file name
     string file = "FILE_NAME: "; 
     file.append(fileName);
@@ -115,6 +139,7 @@ void drawGraph()
         g1.reset(); //Not selecting, reset the graph to normal
 
     glLoadIdentity(); 
+    // Set up the camera
     gluLookAt(0.0, 0.0, zoom, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 
     glPushMatrix();
@@ -129,14 +154,14 @@ void drawGraph()
     float matAmbAndDifSelected[] = {0.0, 0.5, 0.5, 1.0}; // Selected node
     float matAmbAndDifRelated[] = {0.0, 0.0, 0.5, 1.0}; // Node with connecting edge to selected node
     float matAmbAndDifNormal[] = {0.0, 0.0, 0.9, 1.0}; // Normal node 
-    float matAmbAndDifDark[] = {0.0, 0.0, 0.0, 1.0}; // DarkNode
+    float matAmbAndDifDark[] = {0.0, 0.0, 0.0, 1.0}; // Dark node
     float matSpec[] = { 1.0, 1.0, 1.0, 1.0 };
     float matShine[] = { 50.0 };
     
     //Draw the nodes
     for (int i = 0; i < g1.getNumNodes(); i++)
     {
-        // Put a copy of the martrix on the stack
+        // Put a copy of the matrix on the stack
         glPushMatrix();
         // Move this node into position
         glTranslatef(g1.getNodeAt(i).getX(), g1.getNodeAt(i).getY(), g1.getNodeAt(i).getZ());
@@ -153,8 +178,6 @@ void drawGraph()
             if (g1.getNodeAt(i).getDrawState() == 1)
             {
                 // This is the selected node
-                //glColor3f(0.0, 1.0, 1.0);
-                // Material properties of the sphere (only the front is ever seen).
                 glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, matAmbAndDifSelected);
                 // Cull the back faces of the sphere.
                 glEnable(GL_CULL_FACE);
@@ -166,8 +189,6 @@ void drawGraph()
             else if (g1.getNodeAt(i).getDrawState() == 2)
             { 
                 // This node is connected to the selected node
-                //glColor3f(0.0, 0.0, 0.5);
-                // Material properties of the sphere (only the front is ever seen).
                 glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, matAmbAndDifRelated);
                 // Cull the back faces of the sphere.
                 glEnable(GL_CULL_FACE);
@@ -180,14 +201,13 @@ void drawGraph()
             {
                 // This node is not directly connected to the selected node
                 // Material properties of the sphere (only the front is ever seen).
-                // Dont render anything
+                // Don't render anything
                 glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, matAmbAndDifDark);
             }
         }
         else
         {
-            // No node is selected, use defualt colors
-            //glColor3f(0.0, 0.0, 1.0);
+            // No node is selected, use default colors
             // Material properties of the sphere (only the front is ever seen).
             glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, matAmbAndDifNormal);
             // Cull the back faces of the sphere.
@@ -222,7 +242,7 @@ void drawGraph()
                 glEnd();
             }
         }
-    // Move the graph back to its level along the z axis
+    // Move the graph back to its level along the 'z' axis
     glTranslatef(0.0,0.0, zOffset);
     glEnable(GL_LIGHTING);
     glPopMatrix();
@@ -235,10 +255,8 @@ void drawScene(void)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     //Draw graph is rendering mode
     isSelecting = 0;
-
     drawGraph();
 }
-
 
 // Initialization routine.
 void setup(void) 
@@ -287,7 +305,7 @@ void initGraph()
     cin >> fileName;
     // Create the graph from the file
     g1.readInGraph(fileName);
-    // Compute the node lacatios
+    // Compute the node locations
     g1.computeNodeLocations(); 
     // Compute node radius
     nodeRadius += ((float)(g1.getNumNodes()) / 50.0); 
@@ -298,7 +316,6 @@ void initGraph()
     // Compute the required frustum depth
     far = 5 * (float)g1.getNumNodes(); 
 }
-
     
 // OpenGL window reshape routine.
 void resize(int w, int h)
@@ -326,13 +343,11 @@ void keyInput(unsigned char key, int x, int y)
             break;
         case 101:
             //Zoom out
-            //zoom += zoomAmount;
             zOffset += zoomAmount;
             glutPostRedisplay();
             break;
         case 113:
             //Zoom in
-            //zoom -= zoomAmount;
             zOffset -= zoomAmount;
             glutPostRedisplay();
             break;
@@ -403,7 +418,7 @@ void pickFunction(int button, int state, int x, int y)
    glInitNames(); // Initializes the name stack to empty.
    glPushName(0); // Puts name 0 on top of stack.
 
-   // Determine hits by calling drawBallAndTorus() so that names are assigned.
+   // Determine hits by calling drawGraph() so that names are assigned.
    isSelecting = 1;
    drawGraph();
 
@@ -420,14 +435,15 @@ void pickFunction(int button, int state, int x, int y)
    glutPostRedisplay();
 }
 
-
 //Print instructions for the user
 void printInteraction(void)
 {
-    cout << "Interaction:" << endl;
-    cout << "Press Q or E to zoom in / out." << endl;
-    cout << "Press A or D to rotate the graph about the Y axix." << endl;
-    cout << "Press W or S to rotate the graph about the X axix." << endl;
+    cout << "\nInteraction:" << endl;
+    cout << "   Press Q or E to zoom in / out." << endl;
+    cout << "   Press A or D to rotate the graph about the Y axis." << endl;
+    cout << "   Press W or S to rotate the graph about the X axis." << endl;
+    cout << "   Click on a node to enter selection mode." << endl;
+    cout << "   Click anywhere besides a node to exit selection mode." << endl;
 }
 
 // Main routine.
@@ -446,6 +462,5 @@ int main(int argc, char **argv)
     glutKeyboardFunc(keyInput);
     glutMouseFunc(pickFunction); 
     glutMainLoop(); 
- 
     return 0;  
 }
